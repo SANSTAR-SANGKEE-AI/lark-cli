@@ -41,6 +41,16 @@ func dryRunRecordGet(_ context.Context, runtime *common.RuntimeContext) *common.
 		Set("record_id", runtime.Str("record-id"))
 }
 
+func dryRunRecordSearch(_ context.Context, runtime *common.RuntimeContext) *common.DryRunAPI {
+	pc := newParseCtx(runtime)
+	body, _ := parseJSONObject(pc, runtime.Str("json"), "json")
+	return common.NewDryRunAPI().
+		POST("/open-apis/base/v3/bases/:base_token/tables/:table_id/records/search").
+		Body(body).
+		Set("base_token", runtime.Str("base-token")).
+		Set("table_id", baseTableID(runtime))
+}
+
 func dryRunRecordUpsert(_ context.Context, runtime *common.RuntimeContext) *common.DryRunAPI {
 	pc := newParseCtx(runtime)
 	body, _ := parseJSONObject(pc, runtime.Str("json"), "json")
@@ -89,7 +99,6 @@ func validateRecordJSON(runtime *common.RuntimeContext) error {
 func recordListFields(runtime *common.RuntimeContext) []string {
 	return runtime.StrArray("field-id")
 }
-
 func executeRecordList(runtime *common.RuntimeContext) error {
 	offset := runtime.Int("offset")
 	if offset < 0 {
@@ -114,6 +123,20 @@ func executeRecordList(runtime *common.RuntimeContext) error {
 
 func executeRecordGet(runtime *common.RuntimeContext) error {
 	data, err := baseV3Call(runtime, "GET", baseV3Path("bases", runtime.Str("base-token"), "tables", baseTableID(runtime), "records", runtime.Str("record-id")), nil, nil)
+	if err != nil {
+		return err
+	}
+	runtime.Out(data, nil)
+	return nil
+}
+
+func executeRecordSearch(runtime *common.RuntimeContext) error {
+	pc := newParseCtx(runtime)
+	body, err := parseJSONObject(pc, runtime.Str("json"), "json")
+	if err != nil {
+		return err
+	}
+	data, err := baseV3Call(runtime, "POST", baseV3Path("bases", runtime.Str("base-token"), "tables", baseTableID(runtime), "records", "search"), nil, body)
 	if err != nil {
 		return err
 	}

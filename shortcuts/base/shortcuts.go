@@ -37,6 +37,7 @@ func Shortcuts() []common.Shortcut {
 		BaseViewSetCard,
 		BaseViewRename,
 		BaseRecordList,
+		BaseRecordSearch,
 		BaseRecordGet,
 		BaseRecordUpsert,
 		BaseRecordUploadAttachment,
